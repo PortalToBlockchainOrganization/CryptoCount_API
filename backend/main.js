@@ -65,8 +65,8 @@ app.use(function (req, res, next) {
 // app.use(CnnPool.router);
 
 // Load all subroutes
-app.use("/Prss", require("./Routes/Account/Prss.js"));
-app.use("/Ssns", require("./Routes/Account/Ssns.js"));
+//app.use("/Prss", require("./Routes/Account/Prss.js"));
+//app.use("/Ssns", require("./Routes/Account/Ssns.js"));
 app.use("/Anal", require("./Routes/Analysis/Anal.js"));
 
 // Anchor handler for general 404 cases.
