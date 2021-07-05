@@ -33,25 +33,6 @@ router.get('/:objId', function(req, res){
     })
 })
 
-// for history page - get all users objs
-router.get('/', function(req, res){
-    //user_id = req.session.prsId
-    async.waterfall([
-        function(cb){
-            RealizeHistObj.find({userid: user_id},
-            function(err, doc){
-                if(err) cb(err);
-                cb(null, doc);
-            })
-        },
-        function(sets, cb){
-            res.status(200).json(sets)
-        }
-    ],
-    function(err){
-        if(err) console.log(err);
-    })
-})
 
 // beta auto basis price calculation
 router.post('/Auto', function(req, res){
@@ -63,7 +44,7 @@ router.post('/Auto', function(req, res){
     console.log(fiat)
     async.waterfall([
         async function(cb){
-            if(vld.hasFields(body, ["address","fiat","histObjId"]))
+            if(vld.hasFields(body, ["address","fiat"]))
                 try{
                     unrel_obj = await autoAnalysis(address, fiat);
                     console.log(unrel_obj)
@@ -74,26 +55,6 @@ router.post('/Auto', function(req, res){
                     console.log(error)
                     return error;
                 }
-        },
-        function(unrel_obj,cb){
-            // here we check to see if our previous function returned a 
-            // error in the catch block and we instantly jump to the callback
-            // by passing the error in
-            if(unrel_obj && unrel_obj.stack && unrel_obj.message){
-                cb(unrel_obj, null)
-            }
-            console.log(body["histObjId"])
-            RealizeHistObj.findOneAndUpdate({_id: body["histObjId"]}, {$set: {
-                "unrealizedRewards" : unrel_obj.unrealizedRewards,
-                "unrealizedBasisRewards": unrel_obj.unrealizedBasisRewards,
-                "unrealizedBasisRewardsDep" : unrel_obj.unrealizedBasisRewardsDep,
-                "unrealizedBasisRewardsMVDep" : unrel_obj.unrealizedBasisRewardsMVDep,
-                "basisPrice": unrel_obj.basisPrice,
-            }},{new: true}, 
-            function(err, doc){
-                if(err) cb(err);
-                cb(null, doc);
-            })
         },
         function(result, cb){ //after creating new rel db obj, 
             // add the send unrel to FE
@@ -244,61 +205,6 @@ router.post('/Cal', function(req, res) {
         });
 });
 
-router.post('/', function(req, res) {
-    //var vld = req.validator;
-    var body = req.body;
-    //var prsId = req.session.prsId;
-    
-    async.waterfall([
-        function(cb){
-            if (vld.hasFields(body, ["address","fiat","basisDate"]))
-                User.find({_id: prsId}, function(err, docs){
-                    if(err) cb(err);
-                    cb(null, docs)
-                })
-        },
-        function(userInfo, cb){
-            // if a dup exists send a body with 'dup check' to indicate to the
-            // front end that they should prompt the user with a dialogue to manage
-            // duplicates
-            userInfo = userInfo[0]
-            if(userInfo.setIds.length !== 0){
-                res.status(200).json({'dup check':userInfo.setIds.length})
-                cb(null,null);
-            }
-            // if no dups exist, create a new realize history object
-            else{
-                rel_obj = new RealizeHistObj({
-                    userid: userInfo._id,
-                    version: 0,
-                    fiat: body["fiat"],
-                    address: body["address"],
-                    basisDate: body["basisDate"]
-                })
-                rel_obj.save(function(err, doc){
-                    if(err) cb(err);
-                    cb(null,doc);
-                })
-            }
-        },
-        function(rel_doc, cb){
-            // associate the new realize history obj with the user
-            if(rel_doc){
-                User.findOneAndUpdate({_id: prsId}, {$addToSet: {"setIds": rel_doc._id}}, 
-                    function(err, doc){
-                        if(err) cb(err);
-                        cb(null, rel_doc._id);
-                })
-            }
-        },
-        function(doc, cb){
-            res.location(router.baseURL + '/' + doc).end();
-            cb();
-        }],
-        function(err){
-            if(err) console.log(err);
-        });
-});
 
 Date.prototype.addDays = function(days) {
     var date = new Date(this.valueOf());
