@@ -1,8 +1,8 @@
 var Express = require('express');
-var Tags = require('../Validator.js').Tags;
+//var Tags = require('../Validator.js').Tags;
 var router = Express.Router({caseSensitive: true});
 var async = require('async');
-var {Session} = require('../Session.js');
+//var {Session} = require('../Session.js');
 let axios = require('axios');
 const {analysis, realizeRew, saveRealize, autoAnalysis} = require("./tzdelpre.js");
 
@@ -35,7 +35,7 @@ router.get('/:objId', function(req, res){
 
 // for history page - get all users objs
 router.get('/', function(req, res){
-    user_id = req.session.prsId
+    //user_id = req.session.prsId
     async.waterfall([
         function(cb){
             RealizeHistObj.find({userid: user_id},
@@ -55,7 +55,7 @@ router.get('/', function(req, res){
 
 // beta auto basis price calculation
 router.post('/Auto', function(req, res){
-    var vld = req.validator;
+    //var vld = req.validator;
     var body = req.body;
     var unrel_obj = {}
     const {address, fiat} = body;
@@ -164,7 +164,7 @@ router.post('/Realize', function(req,res){
     });
 
 router.post('/Unrel', function(req, res){
-    var vld = req.validator;
+    //var vld = req.validator;
     var body = req.body;
     var unrel_obj = {}
     const {address, fiat, basisDate} = body;
@@ -229,7 +229,7 @@ router.post('/Unrel', function(req, res){
 });
 
 router.post('/Cal', function(req, res) {
-    var vld = req.validator;
+    //var vld = req.validator;
     var body = req.body;
     
     async.waterfall([
@@ -245,9 +245,9 @@ router.post('/Cal', function(req, res) {
 });
 
 router.post('/', function(req, res) {
-    var vld = req.validator;
+    //var vld = req.validator;
     var body = req.body;
-    var prsId = req.session.prsId;
+    //var prsId = req.session.prsId;
     
     async.waterfall([
         function(cb){

@@ -1,9 +1,9 @@
 var express = require("express");
 var path = require("path");
-var cookieParser = require("cookie-parser");
+//var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
-var { Session, router } = require("./Routes/Session.js");
-var Validator = require("./Routes/Validator.js");
+//var { Session, router } = require("./Routes/Session.js");
+//var Validator = require("./Routes/Validator.js");
 var async = require("async");
 const InitiateMongoServer = require("./config/db");
 
@@ -42,13 +42,14 @@ app.use(function (req, res, next) {
 });
 
 // Attach cookies to req as req.cookies.<cookieName>
-app.use(cookieParser());
+//app.use(cookieParser());
 
 // Set up Session on req if available
-app.use(router);
+//app.use(router);
 
 // Check general login.  If OK, add Validator to |req| and continue processing,
 // otherwise respond immediately with 401 and noLogin error tag.
+/*
 app.use(function (req, res, next) {
 	console.log(req.path);
 	if (
@@ -61,6 +62,7 @@ app.use(function (req, res, next) {
 		next();
 	} else res.status(401).end();
 });
+*/
 // Add DB connection, with smart chkQry method, to |req|
 // app.use(CnnPool.router);
 
