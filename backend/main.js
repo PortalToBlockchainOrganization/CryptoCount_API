@@ -65,35 +65,7 @@ app.options("/*", function (req, res) {
 // Parse all request bodies using JSON
 app.use(bodyParser.json());
 
-// Attach cookies to req as req.cookies.<cookieName>
-//app.use(cookieParser());
 
-// Set up Session on req if available
-//app.use(router);
-
-// Check general login.  If OK, add Validator to |req| and continue processing,
-// otherwise respond immediately with 401 and noLogin error tag.
-/*
-app.use(function (req, res, next) {
-	console.log(req.path);
-	if (
-		req.path === "/Anal/Cal" ||
-		req.session ||
-		(req.method === "POST" &&
-			(req.path === "/Prss" || req.path === "/Ssns"))
-	) {
-		req.validator = new Validator(req, res);
-		next();
-	} else res.status(401).end();
-});
-*/
-// Add DB connection, with smart chkQry method, to |req|
-// app.use(CnnPool.router);
-
-// Load all subroutes
-//app.use("/Prss", require("./Routes/Account/Prss.js"));
-//app.use("/Ssns", require("./Routes/Account/Ssns.js"));
-//app.use("/Analysis", require("./Routes/Analysis/Anal.js"));
 
 // Anchor handler for general 404 cases.
 app.use(function (req, res) {
