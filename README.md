@@ -6,7 +6,7 @@
 
 > node main 3001
 
-## Valid Endpoints
+## HTTP Get Request Endpoints
 
 ### Automatic Delegator Address Fiat Book Value Analysis 
 
