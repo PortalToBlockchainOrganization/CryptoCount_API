@@ -8,6 +8,7 @@
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
     "express": "^4.17.0",
     "express-validator": "^6.10.0",
     "jsonwebtoken": "^8.5.1",
@@ -18,9 +19,5 @@
   "scripts": {
     "Ex1": "node ServerEx1.js",
     "Ex2": "node ServerEx2.js"
-  },
-  "author": [
-    "Johnathan Nicholson",
-    "Clinton Staley"
-  ]
+  }
 }
