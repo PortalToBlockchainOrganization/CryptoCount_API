@@ -4,6 +4,8 @@
 
 > cd backend
 
+> npm install
+
 > node main 3001
 
 ## HTTP Get Request Endpoints
