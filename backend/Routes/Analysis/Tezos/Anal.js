@@ -9,10 +9,12 @@ const {
 	autoAnalysis,
 } = require("./tzdelpre.js");
 
+
+// tezos 
 router.baseURL = "/Analysis";
 
 //const RealizeHistObj = require("../../model/realize.js");
-const BlockchainModel = require("../../model/blockchain.js");
+const BlockchainModel = require("../../../model/blockchain.js");
 //const User = require("../../model/User.js");
 
 

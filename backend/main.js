@@ -25,9 +25,11 @@ app.get("/", (req, res)=>{
 	res.status(404).end();
 })
 
-app.use("/Analysis", require("./Routes/Analysis/Anal.js"));
 
+//analysis / tezos 
+app.use("/Analysis/Tezos", require("./Routes/Analysis/Tezos/Anal.js"));
 
+//logging line
 app.get("/Analysis", (req, res)=>{
 	console.log(req.url)
 	console.log(req.params)
@@ -84,6 +86,4 @@ var portnum = args[args.indexOf("-p") + 1];
 
 app.listen(portnum, function () {
 	console.log("App Listening on port " + portnum);
-	console.log(app.status)
-
 });

@@ -1,10 +1,9 @@
-let StatisticModel = require("../../model/statistic.js");
-let CycleModel = require("../../model/cycle");
+let StatisticModel = require("../../../model/statistic.js");
+let CycleModel = require("../../../model/cycle");
 let axios = require("axios");
 const { resolve } = require("bluebird");
-
-const BlockchainModel = require("../../model/blockchain.js");
-const RealizeSet = require("../../model/realize.js");
+const BlockchainModel = require("../../../model/blockchain.js");
+//const RealizeSet = require("../../model/realize.js");
 
 //level 1
 async function getCyclesDays() {
@@ -572,7 +571,7 @@ async function autoAnalysis(address, fiat) {
 	for (i = 0; i < rewards.length; i++) {
 		let basisRewardObj = {
 			date: rewards[i].date,
-			basisReward: rewards[i].rewardQuantity,
+			basisReward: rewards[i].rewardQuantity * basisPrice,
 		};
 		basisRewards.push(basisRewardObj);
 	}
