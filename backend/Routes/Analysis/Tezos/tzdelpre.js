@@ -369,27 +369,47 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 	console.log(unrealrewards);
 
 	//REWARDS BUCKET 
-	for (i = 0; i < unrealrewards.length; i++) {
+	for (i = 0; i < iter1length; i++) {
 		//quantity of unrealized rewward
-		let q = unrealrewards[i].rewardQuantity;
+		let currentQuantity = unrealrewards[i].rewardQuantity;
+
+		console.log("realizedQuant")
+		console.log(realizedQuantity)
+		console.log("current quantity")
+		console.log(currentQuantity)
 
 		//CONDITION 1, if the rewards is less than the realizing q
-		if (q < realizedQuantity) {
-			let realizingObj = unrealrewards.shift();
-			realizingRewardQ.push(realizingObj);
-			let realizingObj2 = unrealizedBasisRewards.shift();
-			realzingRewardBasis.push(realizingObj2);
-			let realizingObj3 = unrealizedBasisRewardsDep.shift();
-			realzingRewardBasisDep.push(realizingObj3);
-			let realizingObj4 = unrealizedBasisRewardsMVDep.shift();
-			realzingRewardBasisMVDep.push(realizingObj4);
-			realizedQuantity = realizedQuantity - q;
-		}
+		if (currentQuantity < realizedQuantity) {
 
+			let realizingObj = unrealrewards[i]
+			realizingRewardQ.push(realizingObj);
+			let realizingObj2 = unrealizedBasisRewards[i];
+			realzingRewardBasis.push(realizingObj2);
+			let realizingObj3 = unrealizedBasisRewardsDep[i];
+			realzingRewardBasisDep.push(realizingObj3);
+			let realizingObj4 = unrealizedBasisRewardsMVDep[i];
+			realzingRewardBasisMVDep.push(realizingObj4);
+			realizedQuantity = realizedQuantity - currentQuantity;
+		}
+	}
+
+	for(i = 0; i < realizingRewardQ ; i++){
+		unrealrewards.shift() 
+		unrealizedBasisRewards.shift()
+		unrealizedBasisRewardsDep.shift()
+		unrealizedBasisRewardsMVDep.shift()
+	}
+
+
+	let iter2length = unrealrewards.length
+
+	for (i = 0; i < iter2length; i++) {
 		//CONDITION 2, if realizng q is greater than realized q and thats not zero
 		//unreal rewards has been shifted back so all index must be lowered 1
 		//technically i would need to recalculate the depletion to make this perfect using bv? or by scaling with proportions of proportions
-		else if (q > realizedQuantity && realizedQuantity != 0) {
+		let q = unrealrewards[i].rewardQuantity;
+
+		if (q > realizedQuantity && realizedQuantity != 0) {
 			//ADD TO REALIZING
 			newrealizngObj = {
 				date: unrealrewards[0].date,
@@ -457,31 +477,31 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 			//end reward realzing
 			break;
 
-			//CONDITION 3 WILL MOD CONDITION 2 -CONTINUING INTO BASIS BUCKET
 		}
 	}
 
+
+
     //BASIS BUCKET 
 
-    console.log('foundRealizeHistory.unrealxtzBasis')
-    console.log(foundRealizeHistory.unrealxtzBasis)
+    
 
 	let percentOfBasisRealizing = realizedQuantity / foundRealizeHistory.unrealXTZBasis 
 
     let realizingXTZbasis = realizedQuantity
-    console.log('foundRealizeHistory.unrealBasisP')
-    console.log(foundRealizeHistory.unrealBasisP)
+  
     let realizingBasisP = foundRealizeHistory.unrealBasisP * percentOfBasisRealizing
-    console.log('realizingBasisP')
-    console.log(realizingBasisP)
+
     // throw 'stop execution';
 	let realizingBasisDep = foundRealizeHistory.unrealBasisDep * percentOfBasisRealizing
     let realizingBasisMVdep = foundRealizeHistory.unrealBasisMVDep * percentOfBasisRealizing
+    console.log(foundRealizeHistory.unrealBasisMVDep)
 
 	let unrealizedXTZBasis = foundRealizeHistory.unrealXTZBasis - realizingXTZbasis
 	let unrealizedBasisP = foundRealizeHistory.unrealBasisP - realizingBasisP
 	let unrealizedBasisDep = foundRealizeHistory.unrealBasisDep - realizingBasisDep
     let unrealizedBasisMVdep = foundRealizeHistory.unrealBasisMVDep - realizingBasisMVdep
+    
 
 	//re aggregate
 	let unrealizedRewardAgg = 0;
@@ -646,23 +666,17 @@ async function autoAnalysis(address, fiat) {
 			// for positive values obtain price at date of tranasaction
 			for (j = 0; j < tranArray.length; j++) {
 				if (
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 7 ==
-						Date.parse(date) ||
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 8 ==
-						Date.parse(date)
+					formatDate(tranArray[j].date) ==
+					formatDate(date) 
 				) {
 					tranVal = tranArray[j].amounnt;
 				} else if (
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 7 >
-						Date.parse(date) ||
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 8 >
-						Date.parse(date)
+					formatDate(tranArray[j].date) >
+					formatDate(date) 
 				) {
 					if (
-						Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 7 <
-							Date.parse(nextDate) ||
-						Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 8 <
-							Date.parse(nextDate)
+						formatDate(tranArray[j].date)  <
+						formatDate(nextDate) 
 					) {
 						tranVal = tranArray[j].amounnt;
 					}
@@ -713,20 +727,9 @@ async function autoAnalysis(address, fiat) {
 	let mvdAnal = [];
 	for (let i = 0; i < basisRewards.length; i++) {
 		for (let j = 0; j < pricesForUser.length; j++) {
-			let date1 = Date.parse(basisRewards[i].date);
-			let date2 = Date.parse(pricesForUser[j].date) - 1000 * 60 * 60 * 7;
-			let date3 = Date.parse(pricesForUser[j].date) - 1000 * 60 * 60 * 8;
+			let date1 = formatDate(basisRewards[i].date);
+			let date2 = formatDate(pricesForUser[j].date)
 			if (date1 == date2) {
-				let date = pricesForUser[j].date;
-				let marketCap = pricesForUser[j].marketCap;
-				let price = pricesForUser[j].price;
-				mvdObj = {
-					date: date,
-					marketCap: marketCap,
-					price: price,
-				};
-				mvdAnal.push(mvdObj);
-			} else if (date1 == date3) {
 				let date = pricesForUser[j].date;
 				let marketCap = pricesForUser[j].marketCap;
 				let price = pricesForUser[j].price;
@@ -767,23 +770,16 @@ async function autoAnalysis(address, fiat) {
 			nextDate = basisRewards[i + 1].date;
 			for (j = 0; j < tranArray.length; j++) {
 				if (
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 7 ==
-						Date.parse(date) ||
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 8 ==
-						Date.parse(date)
+					formatDate(tranArray[j].date) == formatDate(date)
 				) {
 					tranVal = tranArray[j].amounnt;
 				} else if (
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 7 >
-						Date.parse(date) ||
-					Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 8 >
-						Date.parse(date)
+					formatDate(tranArray[j].date) >
+					formatDate(date) 
 				) {
 					if (
-						Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 7 <
-							Date.parse(nextDate) ||
-						Date.parse(tranArray[j].date) - 1000 * 60 * 60 * 8 <
-							Date.parse(nextDate)
+						formatDate(tranArray[j].date) <
+						formatDate(nextDate)
 					) {
 						tranVal = tranArray[j].amounnt;
 					}
@@ -859,6 +855,17 @@ async function autoAnalysis(address, fiat) {
 	let basisMVdep = bookValsMVDepletion[bookValsMVDepletion.length - 1].bvMvDep * (1 - percentOfRew)
 
 
+	//aggregate
+	let unrealizedRewardAgg = 0;
+	let unrealizedBasisAgg = 0;
+	let unrealizedDepAgg = 0;
+	let unrealizedMVDAgg = 0;
+	for (i = 0; i < rewards.length; i++) {
+		unrealizedRewardAgg += rewards[i].rewardQuantity;
+		unrealizedBasisAgg += basisRewards[i].basisReward;
+		unrealizedDepAgg += basisRewardDepletion[i].rewBasisDepletion;
+		unrealizedMVDAgg += basisRewardMVDepletion[i].rewBasisMVDepletion;
+	}
 
 
 	//RETURN OBJECT
@@ -869,10 +876,14 @@ async function autoAnalysis(address, fiat) {
 		unrealizedBasisRewards: basisRewards,
 		unrealizedBasisRewardsDep: basisRewardDepletion,
 		unrealizedBasisRewardsMVDep: basisRewardMVDepletion,
+		unrealizedRewardAgg: unrealizedRewardAgg,
+		unrealizedBasisAgg: unrealizedBasisAgg,
+		unrealizedDepAgg: unrealizedDepAgg,
+		unrealizedMVDAgg: unrealizedMVDAgg,
 		address: address,
 		fiat: fiat,
-        	basisPrice: basisPrice,
-        	xtzBasis: xtzBasis,
+		basisPrice: basisPrice,
+		xtzBasis: xtzBasis,
 		basisP: basisP,
 		basisDep: basisDep,
 		basisMVdep: basisMVdep
@@ -880,6 +891,7 @@ async function autoAnalysis(address, fiat) {
 
 	return analysisResObj;
 }
+
 
 async function avgBasisPrice(address, fiat) {
 	let transObject = await getTransactions(address);
