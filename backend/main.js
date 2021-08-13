@@ -36,6 +36,7 @@ app.get("/Analysis", (req, res)=>{
 	console.log(req.query)
 	console.log(req.validator)
 	res.status(404).end();
+	next()
 })
 
 // Static paths to be served like index.html and all client side js
@@ -44,15 +45,15 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 
-app.use(function (req, res, next) {
-	console.log("Handling " + req.path + "/" + req.method);
+app.use(function (request, response, next) {
+	console.log("Handling " + request.path + "/" + request.method);
 	//
-	res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-	res.header("Access-Control-Allow-Credentials", true);
-	res.header("Access-Control-Allow-Headers", "Content-Type, Location");
-	res.header("Access-Control-Expose-Headers", "Content-Type, Location");
-	res.header("Access-Control-Allow-Methods", "DELETE, PUT");
-	next();
+	response.header("Access-Control-Allow-Origin", "http://localhost:3000");
+	response.header("Access-Control-Allow-Credentials", true);
+	response.header("Access-Control-Allow-Headers", "Content-Type, Location");
+	response.header("Access-Control-Expose-Headers", "Content-Type, Location");
+	response.header("Access-Control-Allow-Methods", "DELETE, PUT");
+	response.end()
 });
 
 
