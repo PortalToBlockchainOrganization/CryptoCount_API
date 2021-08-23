@@ -8,7 +8,7 @@ Cryptocount API services Tezos delegator address.
 
 # Query Documentation
 
-https://portaltoblockchain.org
+Please go to https://portaltoblockchain.org for complete query documentation. 
 
 # Thrid Party API Calls
 
