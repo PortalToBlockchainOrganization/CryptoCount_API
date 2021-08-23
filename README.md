@@ -4,6 +4,8 @@
 
 CryptoCount API serves as an endpoint for integration of CryptoCount accounting services into interested third party systems. The API offers optimized products based off of the CryptoCount app API. https://github.com/HenrikMoe/CryptoCount. 
 
+Cryptocount API services Tezos delegator address. 
+
 # Query Documentation
 
 https://portaltoblockchain.org
