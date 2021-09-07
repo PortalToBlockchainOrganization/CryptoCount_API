@@ -52,7 +52,7 @@ app.use(function (request, response, next) {
 	response.header("Access-Control-Allow-Credentials", true);
 	response.header("Access-Control-Allow-Headers", "Content-Type, Location");
 	response.header("Access-Control-Expose-Headers", "Content-Type, Location");
-	response.header("Access-Control-Allow-Methods", "DELETE, PUT");
+	response.header("Access-Control-Allow-Methods", "GET, DELETE, PUT");
 	response.end()
 });
 

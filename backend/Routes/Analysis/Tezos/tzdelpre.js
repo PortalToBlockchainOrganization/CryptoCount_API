@@ -369,7 +369,7 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 	console.log(unrealrewards);
 
 	//REWARDS BUCKET 
-	for (i = 0; i < iter1length; i++) {
+	for (i = 0; i < unrealrewards.length; i++) {
 		//quantity of unrealized rewward
 		let currentQuantity = unrealrewards[i].rewardQuantity;
 
@@ -393,7 +393,7 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 		}
 	}
 
-	for(i = 0; i < realizingRewardQ ; i++){
+	for(i = 0; i < realizingRewardQ.length ; i++){
 		unrealrewards.shift() 
 		unrealizedBasisRewards.shift()
 		unrealizedBasisRewardsDep.shift()
