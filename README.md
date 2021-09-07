@@ -1,35 +1,26 @@
 # CryptoCount_API
 
-## Start
+# Purpose
 
-> cd backend
+CryptoCount API serves as an endpoint for integration of CryptoCount accounting services into interested third party systems. The API offers optimized products based off of the CryptoCount app API. https://github.com/HenrikMoe/CryptoCount. 
 
-> npm install
+Cryptocount API services Tezos delegator address. 
 
-> node main 3001
+# Query Documentation
 
-## HTTP Get Request Endpoints
+Please go to https://portaltoblockchain.org for complete query documentation. 
 
-### Automatic Delegator Address Fiat Book Value Analysis 
+# Thrid Party API Calls
 
-> localhost:3001/Analysis/Auto
+CryptoCount uses two third party APIs. 
 
-#### Query Parameters
+(1) tzkt.io / bakingbad.org - CryptoCount calls Baking Bad's Tezos blockchain index API to retrieve reward, balance, supply, and transaction data. 
 
->?address=${address}&fiat=${fiat}
-
-*where fiat is the three letter representation of your country's fiat
-
-### Automatic Delegator Address Analysis While Realizing A Quantity Of XTZ 
-
-> localhost:3001/Analysis/AutoRealizing
-
-#### Query Parameters
-
->?address=${address}&fiat=${fiat}&quantityRealizing=${quantityRealizing}
+(2) coingecko.com - CryptoCount calls CoinGecko's cryptocurrency market data API to retrieve price and market share data. 
 
 
+# Disclaimer
 
-
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
