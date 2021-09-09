@@ -150,8 +150,12 @@ async function getPricesAndMarketCap(fiat) {
 	let finalData = [];
 	for (i = 0; i < priceAndMarketCapData.length; i++) {
 		let date = priceAndMarketCapData[i].date;
-		//why cant identifier at end be var?
-		let priceN = priceAndMarketCapData[i][price];
+        // convert year month day to month day year
+        var date_arr1 = date.toString().split('-')
+        var date_arr2 = [date_arr1[1], date_arr1[2], date_arr1[0]]
+        date = date_arr2.join('-')
+
+        let priceN = priceAndMarketCapData[i][price];
 		let marketCapN = priceAndMarketCapData[i][marketCap];
 		finalObj = {
 			date: date,
@@ -509,10 +513,15 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 	let unrealizedDepAgg = 0;
 	let unrealizedMVDAgg = 0;
 	for (i = 0; i < unrealrewards.length; i++) {
-		unrealizedRewardAgg += unrealrewards[i].rewardQuantity;
-		unrealizedBasisAgg += unrealizedBasisRewards[i].basisReward;
-		unrealizedDepAgg += unrealizedBasisRewardsDep[i].rewBasisDepletion;
-		unrealizedMVDAgg += unrealizedBasisRewardsMVDep[i].rewBasisMVDepletion;
+		try{
+			unrealizedRewardAgg += unrealrewards[i].rewardQuantity;
+			unrealizedBasisAgg += unrealizedBasisRewards[i].basisReward;
+			unrealizedDepAgg += unrealizedBasisRewardsDep[i].rewBasisDepletion;
+			unrealizedMVDAgg += unrealizedBasisRewardsMVDep[i].rewBasisMVDepletion;
+		} catch (e){
+			break
+		}
+		
 	}
 
 	//re aggregate
@@ -521,10 +530,14 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 	let realizingDepAgg = 0;
 	let realizingMVdAgg = 0;
 	for (i = 0; i < realizingRewardQ.length; i++) {
-		realizingRewardAgg += realizingRewardQ[i].rewardQuantity;
-		realizingBasisAgg += realzingRewardBasis[i].basisReward;
-		realizingDepAgg += realzingRewardBasisDep[i].rewBasisDepletion;
-		realizingMVdAgg += realzingRewardBasisMVDep[i].rewBasisMVDepletion;
+		try{
+			realizingRewardAgg += realizingRewardQ[i].rewardQuantity;
+			realizingBasisAgg += realzingRewardBasis[i].basisReward;
+			realizingDepAgg += realzingRewardBasisDep[i].rewBasisDepletion;
+			realizingMVdAgg += realzingRewardBasisMVDep[i].rewBasisMVDepletion;
+		} catch (e) {
+			break
+		}
 	}
 
 	//realize out of bookvalue - rewards = basis
@@ -752,7 +765,7 @@ async function autoAnalysis(address, fiat) {
 
 	let basisRewardMVDepletion = [];
 
-	for (i = 0; i < basisRewards.length; i++) {
+	for (i = 0; i < basisRewards.length && i < mvdAnal.length; i++) {
 		let tranVal = 0;
 		date = basisRewards[i].date;
 		if (i == 0) {
@@ -860,7 +873,7 @@ async function autoAnalysis(address, fiat) {
 	let unrealizedBasisAgg = 0;
 	let unrealizedDepAgg = 0;
 	let unrealizedMVDAgg = 0;
-	for (i = 0; i < rewards.length; i++) {
+	for (i = 0; i < rewards.length && i < basisRewards.length && i < basisRewardDepletion.length && i < basisRewardMVDepletion.length; i++) {
 		unrealizedRewardAgg += rewards[i].rewardQuantity;
 		unrealizedBasisAgg += basisRewards[i].basisReward;
 		unrealizedDepAgg += basisRewardDepletion[i].rewBasisDepletion;
