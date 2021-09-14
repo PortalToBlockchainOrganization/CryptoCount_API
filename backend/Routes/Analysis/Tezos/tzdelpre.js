@@ -3,6 +3,7 @@ let CycleModel = require("../../../model/cycle");
 let axios = require("axios");
 const { resolve } = require("bluebird");
 const BlockchainModel = require("../../../model/blockchain.js");
+//let jsPDF  = require("jspdf");
 //const RealizeSet = require("../../model/realize.js");
 
 //level 1
@@ -548,6 +549,29 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 	basis aggr
     */
 
+	//make pdf
+	//dummy objects for js pdf to work on node
+	global.window = {document: {createElementNS: () => {return {}} }};
+	global.navigator = {};
+	global.btoa = () => {};
+
+	const fs = require('fs')
+	const {jsPDF} = require('jspdf/dist/jspdf.node.min')
+
+	var doc = new jsPDF()
+
+	var img = "../../../assets/image.js"
+	doc.addImage(img, 'JPEG', 30, 25, 50, 50, 'PTBO Logo');
+	doc.text("Hello World", 10, 10)
+
+	fs.writeFileSync('./output.pdf', doc.output())
+
+
+	delete global.window;
+	delete global.navigator;
+	delete global.btoa;
+
+
 	realizedObj = {
 		realizingRewards: realizingRewardQ,
 		unrealizedRewards: unrealrewards,
@@ -582,6 +606,7 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 		realizedBasisRewards: foundRealizeHistory.realizedBasisRewards,
 		realizedBasisRewardsDep: foundRealizeHistory.realizedBasisRewardsDep,
         realizedBasisRewardsMVDep: foundRealizeHistory.realizedBasisRewardsMVDep,
+		pdfDocument: doc,
         _id: foundRealizeHistory._id
 
 	};
