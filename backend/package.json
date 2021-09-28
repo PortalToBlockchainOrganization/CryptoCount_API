@@ -15,7 +15,8 @@
     "jspdf": "^2.4.0",
     "mongoose": "^5.12.0",
     "mysql": "^2.11.1",
-    "newman": "^5.1.2"
+    "newman": "^5.1.2",
+    "pdfkit": "^0.12.3"
   },
   "scripts": {
     "Ex1": "node ServerEx1.js",
