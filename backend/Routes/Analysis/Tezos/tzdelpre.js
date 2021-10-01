@@ -470,73 +470,78 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 		let q = unrealrewards[i].rewardQuantity;
 
 		if (q > realizedQuantity && realizedQuantity != 0) {
-			//ADD TO REALIZING
-			newrealizngObj = {
-				date: unrealrewards[0].date,
-				rewardQuantity: realizedQuantity,
-			};
-			realizingRewardQ.push(newrealizngObj);
+							try{
+				//ADD TO REALIZING
+				newrealizngObj = {
+					date: unrealrewards[0].date,
+					rewardQuantity: realizedQuantity,
+				};
+				realizingRewardQ.push(newrealizngObj);
 
-			newrealizngObj = {
-				date: unrealizedBasisRewards[0].date,
-				basisReward: realizedQuantity * basisPrice,
-			};
-			realzingRewardBasis.push(newrealizngObj);
+				newrealizngObj = {
+					date: unrealizedBasisRewards[0].date,
+					basisReward: realizedQuantity * basisPrice,
+				};
+				realzingRewardBasis.push(newrealizngObj);
 
-			//dep = unrealizedBasisRewardsDep[0].rewBasisDepletion - (unrealrewards[0].rewardQuantity * basisPrice)
-			newrealizngObj = {
-				date: unrealizedBasisRewardsDep[0].date,
-				rewBasisDepletion: realizedQuantity * basisPrice, //+ dep
-			};
-			realzingRewardBasisDep.push(newrealizngObj);
+				//dep = unrealizedBasisRewardsDep[0].rewBasisDepletion - (unrealrewards[0].rewardQuantity * basisPrice)
+				newrealizngObj = {
+					date: unrealizedBasisRewardsDep[0].date,
+					rewBasisDepletion: realizedQuantity * basisPrice, //+ dep
+				};
+				realzingRewardBasisDep.push(newrealizngObj);
 
-			//dep = unrealizedBasisRewardsMVDep[0].rewBasisMVDepletion - (unrealrewards[0].rewardQuantity * basisPrice)
-			newrealizngObj = {
-				date: unrealizedBasisRewardsMVDep[0].date,
-				rewBasisMVDepletion: realizedQuantity * basisPrice, //+ dep
-			};
-			realzingRewardBasisMVDep.push(newrealizngObj);
+				//dep = unrealizedBasisRewardsMVDep[0].rewBasisMVDepletion - (unrealrewards[0].rewardQuantity * basisPrice)
+				newrealizngObj = {
+					date: unrealizedBasisRewardsMVDep[0].date,
+					rewBasisMVDepletion: realizedQuantity * basisPrice, //+ dep
+				};
+				realzingRewardBasisMVDep.push(newrealizngObj);
 
-			//MOD UNREAL
-			unrealObj = {
-				date: unrealrewards[0].date,
-				rewardQuantity:
-					unrealrewards[0].rewardQuantity - realizedQuantity,
-			};
-			unrealrewards.shift();
-			unrealrewards.unshift(unrealObj);
+				//MOD UNREAL
+				unrealObj = {
+					date: unrealrewards[0].date,
+					rewardQuantity:
+						unrealrewards[0].rewardQuantity - realizedQuantity,
+				};
+				unrealrewards.shift();
+				unrealrewards.unshift(unrealObj);
 
-			unrealObj = {
-				date: unrealizedBasisRewards[0].date,
-				basisReward:
-					unrealizedBasisRewards[0].basisReward -
-					realizedQuantity * basisPrice,
-			};
-			unrealizedBasisRewards.shift();
-			unrealizedBasisRewards.unshift(unrealObj);
+				unrealObj = {
+					date: unrealizedBasisRewards[0].date,
+					basisReward:
+						unrealizedBasisRewards[0].basisReward -
+						realizedQuantity * basisPrice,
+				};
+				unrealizedBasisRewards.shift();
+				unrealizedBasisRewards.unshift(unrealObj);
 
-			//dep = unrealrewards[i-1].q * basisPrice - unrealizedBasisRewardsDep[i-1].rewBasisDepletion
-			unrealObj = {
-				date: unrealizedBasisRewardsDep[0].date,
-				rewBasisDepletion:
-					unrealizedBasisRewardsDep[0].rewBasisDepletion -
-					realizedQuantity * basisPrice, // + dep
-			};
-			unrealizedBasisRewardsDep.shift();
-			unrealizedBasisRewardsDep.unshift(unrealObj);
-			//dep = unrealizedBasisRewardsMVDep[i-1].rewBasisMVDepletion - (unrealrewards[i-1].q * basisPrice)
-			unrealObj = {
-				date: unrealizedBasisRewardsMVDep[0].date,
-				rewBasisMVDepletion:
-					unrealizedBasisRewardsMVDep[0].rewBasisMVDepletion -
-					realizedQuantity * basisPrice, // + dep
-			};
-			unrealizedBasisRewardsMVDep.shift();
-			unrealizedBasisRewardsMVDep.unshift(unrealObj);
+				//dep = unrealrewards[i-1].q * basisPrice - unrealizedBasisRewardsDep[i-1].rewBasisDepletion
+				unrealObj = {
+					date: unrealizedBasisRewardsDep[0].date,
+					rewBasisDepletion:
+						unrealizedBasisRewardsDep[0].rewBasisDepletion -
+						realizedQuantity * basisPrice, // + dep
+				};
+				unrealizedBasisRewardsDep.shift();
+				unrealizedBasisRewardsDep.unshift(unrealObj);
+				//dep = unrealizedBasisRewardsMVDep[i-1].rewBasisMVDepletion - (unrealrewards[i-1].q * basisPrice)
+				unrealObj = {
+					date: unrealizedBasisRewardsMVDep[0].date,
+					rewBasisMVDepletion:
+						unrealizedBasisRewardsMVDep[0].rewBasisMVDepletion -
+						realizedQuantity * basisPrice, // + dep
+				};
+				unrealizedBasisRewardsMVDep.shift();
+				unrealizedBasisRewardsMVDep.unshift(unrealObj);
 
-			//end reward realzing
-			break;
+				//end reward realzing
+				break;
 
+			}catch(e){
+				break
+			}
+			
 		}
 	}
 
