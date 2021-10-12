@@ -147,7 +147,7 @@ async function getPricesAndMarketCap(fiat) {
 	//PRICE AND MARKET CAPITAL OBJECT
 	let price = `price${fiat}`;
 	let marketCap = `marketCap${fiat}`;
-	let priceAndMarketCapData = await BlockchainModel.find();
+	let priceAndMarketCapData = await BlockchainModel.find({},{date: 1, [price]: 1, [marketCap]: 1})
 	let finalData = [];
 	for (i = 0; i < priceAndMarketCapData.length; i++) {
 		let date = priceAndMarketCapData[i].date;
