@@ -171,7 +171,6 @@ async function getPricesAndMarketCap(fiat) {
 	return finalData;
 }
 
-//level 2
 async function getRewards(address) {
 	//URL SET OBJECT CONSTRUCTION
 
@@ -224,6 +223,8 @@ async function getRewards(address) {
     prevObj.cycleEnd = cycleDocs[cycleDocs.length -1].cycleNumber;
     //let rewardFetch[lastElement].cycleEnd = cycleDocs[length].cycleNumber;
 
+	console.log("rewards fetch")
+	console.log(rewardFetch)
 	//call baker history object
 	
 
@@ -245,14 +246,15 @@ async function getRewards(address) {
 		    i <= rewardFetch[j].cycleEnd;
 			i++
 		) {
-			urlObj = {
-				url: `https://api.baking-bad.org/v2/rewards/${bakerAddress}?cycle=${i}`,
-			};
+			urlObj = 
+				`https://api.baking-bad.org/v2/rewards/${bakerAddress}?cycle=${i}`;
+			
 			urlSet.push(urlObj);
 		}
 	}
-
-	//URL OBJECT USING
+	console.log("url set")
+	console.log(urlSet)
+//URL OBJECT USING
 	//define the query promise contructor here
 	function promiseGet(url) {
 		return new Promise((resolve, reject) => {
@@ -271,7 +273,7 @@ async function getRewards(address) {
 	var promises = [];
 	urlSet.forEach((url) => {
 		promises.push(
-			promiseGet(url.url)
+			promiseGet(url)
 				.then((urlObj) => {
 					try{
 						let payoutArray = urlObj.data.payouts;
