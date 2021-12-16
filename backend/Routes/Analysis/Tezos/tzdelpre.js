@@ -255,7 +255,13 @@ async function getRewards(address) {
 	function promiseGet(url) {
 		return new Promise((resolve, reject) => {
 			try {
-				payload = axios.get(url);
+				payload = axios.get({
+					method: 'get',
+					url: url,
+					responseType: 'application/json',
+					httpsAgent: new https.Agent({ keepAlive: true }),
+					timeout: 2000,
+				  });
 				resolve(payload);
 			} catch (err) {
 				console.log(`Could not get data from url: ${url}`);
