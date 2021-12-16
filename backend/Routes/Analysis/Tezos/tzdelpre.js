@@ -240,7 +240,7 @@ async function getRewards(address) {
 		//if before irl cycle end
 		for (
 			let i = rewardFetch[j].cycleStart;
-		    i < rewardFetch[j].cycleEnd;
+		    i <= rewardFetch[j].cycleEnd;
 			i++
 		) {
 			urlObj = {
@@ -255,13 +255,8 @@ async function getRewards(address) {
 	function promiseGet(url) {
 		return new Promise((resolve, reject) => {
 			try {
-				payload = axios.get({
-					method: 'get',
-					url: url,
-					responseType: 'application/json',
-					httpsAgent: new https.Agent({ keepAlive: true }),
-					timeout: 2000,
-				  });
+				payload = axios.get(url, {httpsAgent: new https.Agent({ keepAlive: true }),
+				timeout: 20000});
 				resolve(payload);
 			} catch (err) {
 				console.log(`Could not get data from url: ${url}`);
