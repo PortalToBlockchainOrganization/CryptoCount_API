@@ -5,6 +5,8 @@ const { resolve } = require("bluebird");
 const BlockchainModel = require("../../../model/blockchain.js");
 //let jsPDF  = require("jspdf");
 //const RealizeSet = require("../../model/realize.js");
+const https = require('https')
+
 
 //level 1
 async function getCyclesDays() {
