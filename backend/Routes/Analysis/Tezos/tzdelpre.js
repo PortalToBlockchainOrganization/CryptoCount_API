@@ -113,8 +113,8 @@ async function getBalances(address) {
 	let balances = {};
 	//offset from index
 	let offset = 0;
-	let resp_lens = 10;
-	while (resp_lens === 10) {
+	let resp_lens = 10000;
+	while (resp_lens === 10000) {
 		let url = `https://api.tzkt.io/v1/accounts/${address}/balance_history?offset=${offset}&limit=10000`;
 		const response = await axios.get(url);
 		resp_lens = response.data.length;
@@ -130,14 +130,18 @@ async function getBalances(address) {
 			if (d1 === d2) {
 				balances[d1] = element.balance;
 			} else {
-				d1 = new Date(d1);
+				date_itr = new Date(d1)
+				preIter = new Date(d1).toISOString();
 				d2 = new Date(d2);
-				date_itr = d1;
-				while (date_itr < d2) {
-					date_key = date_itr.toISOString().slice(0, 10);
-					balances[date_key] = response.data[i].balance;
-					date_itr = date_itr.addDays(1);
-				}
+				balances[preIter] = response.data[i].balance / 1000000;
+
+
+			
+				// while (date_itr < d2) {
+				// 	date_key = preIter
+				// 	balances[date_key] = response.data[i].balance / 1000000;
+				// 	date_itr = preIter.setDate(preIter.getDate() + 1);
+				// }
 			}
 		}
 	}
@@ -171,16 +175,16 @@ async function getPricesAndMarketCap(fiat) {
 	return finalData;
 }
 
-async function getRewards(address) {
+async function getRewardsDelegators(address) {
 	//URL SET OBJECT CONSTRUCTION
 
 	//call cycle doc object
    
 //call cycle doc object
-    const cycleDocs = await CycleModel.find().sort({cycleNumber: 1});
+    const cycleDocs = await CycleModel.find().sort({cycleNumber: 1});
 
-    //BAKER HISTORY OBJECT CONSTRUCTION
-    let url = `https://api.tzkt.io/v1/rewards/delegators/${address}?cycle.ge=0`;
+    //BAKER HISTORY OBJECT CONSTRUCTION
+    let url = `https://api.tzkt.io/v1/rewards/delegators/${address}?cycle.ge=0&limit=10000`;
     const response = await axios.get(url);
     let delegatorHistory = [];
     let delegatorHistObj = {};
@@ -221,9 +225,9 @@ async function getRewards(address) {
             prevObj.cycleEnd = cycleEnd;
         }
     }
-        let prevObj = rewardFetch[rewardFetch.length - 1];
-        prevObj.cycleEnd = cycleDocs[cycleDocs.length -1].cycleNumber;
-        //let rewardFetch[lastElement].cycleEnd = cycleDocs[length].cycleNumber;
+        let prevObj = rewardFetch[rewardFetch.length - 1];
+        prevObj.cycleEnd = cycleDocs[cycleDocs.length -1].cycleNumber;
+        //let rewardFetch[lastElement].cycleEnd = cycleDocs[length].cycleNumber;
 
     console.log("rewards fetch")
     console.log(rewardFetch)
@@ -247,41 +251,122 @@ async function getRewards(address) {
             urlSet.push(`https://api.baking-bad.org/v2/rewards/${bakerAddress}?cycle=${i}`);
         }
     }
+	
+		//define the query promise contructor here
+	function promiseGet(url) {
+		return new Promise((resolve, reject) => {
+			try {
+				payload = axios.get(url) //, {httpsAgent: new https.Agent({ keepAlive: true }),timeout: 20000});
+				resolve(payload);
+			} catch (err) {
+				console.log(`Could not get data from url: ${url}`);
+				reject(new Error(err));
+			}
+			//add ids by cycle or something here
+		});
+	}
 
-    var j, temporary, chunk = 16;
-    var results = []
-    console.log(urlSet.length)
-    for (i = 0,j = urlSet.length; i < j; i += chunk) {
-        temporary = urlSet.slice(i, i + chunk);
-        result = await axios.all(temporary.map(url=> axios.get(url)));
-        // do whatever
-        results.push(...result)
-    }
+	var promises = [];
+	urlSet.forEach((url) => {
+		promises.push(
+			promiseGet(url)
+				.then((urlObj) => {
+					try{
+						let payoutArray = urlObj.data.payouts;
+						let addressProperty = "address";
+						let amountProperty = "amount";
+						if (payoutArray === undefined) {
+							console.log(urlObj);
+						}else{
+							for (let i = 0; i < payoutArray.length; i++) {
+								if (address == payoutArray[i][addressProperty]) {
+									let amount = payoutArray[i][amountProperty];
+									if (amount < 0.0001 && amount > 0) {
+										amount = amount * 10000;
+									}
+									var rewardObject = {
+										quantity: amount,
+										cycle: urlObj.data.cycle,
+									};
+									return rewardObject;
+								}
+							}
+						}
+						resolve(payoutArray)
+					}catch(e){
+						console.log(`Could not get data from url: ${url}`);
+						reject(new Error(err));
+					}
+				})
+				.catch((err) => {
+					console.log(err);
+				})
+		);
+	});
 
-    console.log(results.length);
+	//finish all promise models push all returned data up to the base level of the method execution
+	let rewards = [];
+	await Promise.all(promises)
+		.then((values) => {
+			values.forEach((element) => {
+				if (typeof element === "object") {
+					var reward = element;
+					rewards.push(reward);
+				}
+			});
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+	
+	
+	
 
-    var rewards = results.map(urlObj =>{
-            let payoutArray = urlObj.data.payouts;
-            let addressProperty = "address";
-            let amountProperty = "amount";
-            if (payoutArray === undefined) {
-                console.log(urlObj);
-            }else{
-                for (let i = 0; i < payoutArray.length; i++) {
-                    if (address == payoutArray[i][addressProperty]) {
-                        let amount = payoutArray[i][amountProperty];
-                        if (amount < 0.0001 && amount > 0) {
-                            amount = amount * 10000;
-                        }
-                        var rewardObject = {
-                            quantity: amount,
-                            cycle: urlObj.data.cycle,
-                        };
-                        return rewardObject;
-                    }
-                }
-            }
-    })
+	
+	
+	
+	
+	//////
+	
+	
+
+   
+	// var j, temporary, chunk = 16;
+    // var results = []
+    // console.log(urlSet.length)
+    // for (i = 0,j = urlSet.length; i < j; i += chunk) {
+    //     temporary = urlSet.slice(i, i + chunk);
+    //     result = await axios.all(temporary.map(url=> axios.get(url)));
+    //     // do whatever
+    //     results.push(...result)
+    // }
+
+    // console.log(results.length);
+
+    // var rewards = results.map(urlObj =>{
+    //         let payoutArray = urlObj.data.payouts;
+    //         let addressProperty = "address";
+    //         let amountProperty = "amount";
+    //         if (payoutArray === undefined) {
+    //             console.log(urlObj);
+    //         }else{
+    //             for (let i = 0; i < payoutArray.length; i++) {
+    //                 if (address == payoutArray[i][addressProperty]) {
+    //                     let amount = payoutArray[i][amountProperty];
+    //                     if (amount < 0.0001 && amount > 0) {
+    //                         amount = amount * 10000;
+    //                     }
+    //                     var rewardObject = {
+    //                         quantity: amount,
+    //                         cycle: urlObj.data.cycle,
+    //                     };
+    //                     return rewardObject;
+    //                 }
+    //             }
+    //         }
+    // })
+    
+    
 
 	//finish all promise models push all returned data up to the base level of the method execution
 
@@ -304,7 +389,7 @@ async function getRewards(address) {
 
 	//get trans
 	//transaction tzkt url - https://api.tzkt.io/v1/operations/transactions?anyof.sender.target={$address} will return operations where sender OR target is equal to the specified value. This parameter is useful when you need to retrieve all transactions associated with a specified account.
-	let url2 = `https://api.tzkt.io/v1/operations/transactions?anyof.sender.target=${address}`;
+	let url2 = `https://api.tzkt.io/v1/operations/transactions?anyof.sender.target=${address}&limit=10000`;
 	const response2 = await axios.get(url2);
 
 	let objectArray = [];
@@ -706,23 +791,37 @@ async function realize(foundRealizeHistory, realizedQuantity) {
 }
 
 
-async function autoAnalysis(address, fiat) {
+async function autoAnalysis(address, fiat, consensusRole) {
 	//label objects by blocks, delete repeats, remove clutter
 
 	//DATA DEPENDCEIES
 	//ADD tran
-	var values= await getRewards(address);
+	var values = []
+	console.log(consensusRole)
+	if("Baker" === consensusRole){
+		values= await getRewardsBakers(address);
+	}
+	else{
+		values = await getRewardsDelegators(address)
+	}
+    console.log('values', values)
 	var rewards = values[0] 
 	var tranArray = values[1] 
 	console.log('done w rewards')
-	console.log(rewards)
 
 	//let {basisBalances, pricesForUser, tranArray, basisPrice} = depencies(address, fiat)
 	let basisBalances = await getBalances(address);
 	console.log('done w balances')
+	console.log(basisBalances)
 
 	let pricesForUser = await getPricesAndMarketCap(fiat);
 	console.log('done w price and market')
+	let prices = {};
+	// convert document to dictionary for better find performance (date -> int: price -> number; date -> int: marketCap -> number)
+	for (let i = 0; i < pricesForUser.length; i++) {
+		const d = formatDate(pricesForUser[i].date)
+		prices[d] = pricesForUser[i].price;
+	}
 
 	//let tranArray = await getTransactions(address);
 	// console.log('done w trans')
@@ -799,6 +898,7 @@ async function autoAnalysis(address, fiat) {
 		};
 		totalSupplys.push(totalSupplyObj);
 	}
+	console.log("done getting supply stats")
 	for (let i = 0; i < rewards.length; i++) {
 		let date = rewards[i].date;
 		for (j = 0; j < totalSupplys.length; j++) {
@@ -833,7 +933,7 @@ async function autoAnalysis(address, fiat) {
 
 
 	let basisValue = Object.values(basisBalances)[0];
-	let bookVal = basisPrice * (basisValue / 1000000);
+	let bookVal = prices[formatDate(Object.keys(basisBalances)[0])] * (basisValue);
 
 
 	let bookValsMVDepletion = [];
@@ -858,7 +958,7 @@ async function autoAnalysis(address, fiat) {
 
 
 	for(i = 1; i < rewards.length - 1; i++){
-	    bookVal = bookValsBasis[i-1].bvBas + rewards[i].rewardQuantity * basisPrice
+	    bookVal = bookValsBasis[i-1].bvBas + rewards[i].rewardQuantity * prices[formatDate(rewards[i].date)]
 	    bvBasObj = {
 	        "date": rewards[i].date,
 	        "bvBas": bookVal
@@ -873,7 +973,7 @@ async function autoAnalysis(address, fiat) {
 	for (i = 0; i < rewards.length; i++) {
 		let basisRewardObj = {
 			"date": rewards[i].date,
-			"basisReward": rewards[i].rewardQuantity * basisPrice,
+			"basisReward": rewards[i].rewardQuantity * prices[formatDate(rewards[i].date)],
 		};
 		basisRewards.push(basisRewardObj);
 
@@ -908,34 +1008,38 @@ async function autoAnalysis(address, fiat) {
 				
 			}
 			let depletion = bookValsDepletion[i - 1].bvDep * (1 - supply[i - 1].supply / supply[i].supply);
-			let bookVal = bookValsDepletion[i - 1].bvDep + basisRewards[i].basisReward - depletion + tranVal * basisPrice;
+			let bookVal = bookValsDepletion[i - 1].bvDep + basisRewards[i].basisReward - depletion + tranVal * prices[formatDate(rewards[i].date)];
 			let bvDepObj = {
 					date: date,
 					bvDep: bookVal,
 				};
-			let percentage = basisRewards[i].basisReward / bookVal;
-			let rewardDepletionObj = {
-					date: date,
-					rewBasisDepletion:
-						basisRewards[i].basisReward - depletion * percentage, //CHANGE THIS ADD DEPLETION AT THE RATIO OF THIS REWARD TO ACCOUNT BALANCE
-				};
-			bookValsDepletion.push(bvDepObj);
-			basisRewardDepletion.push(rewardDepletionObj);
-
 			let MVdepletion = bookValsMVDepletion[i - 1].bvMvDep * (mvdAnal[i].marketCap / mvdAnal[i - 1].marketCap - mvdAnal[i].price / mvdAnal[i - 1].price);
-			bookVal = bookValsMVDepletion[i - 1].bvMvDep +	basisRewards[i].basisReward - MVdepletion + tranVal * basisPrice;
+			bookVal = bookValsMVDepletion[i - 1].bvMvDep +	basisRewards[i].basisReward - MVdepletion + tranVal * prices[formatDate(rewards[i].date)];
 			let bvMVDepObj = {
 					date: basisRewards[i].date,
 					bvMvDep: bookVal,
 				};
-			percentage = basisRewards[i].basisReward / bookVal;
-			let rewardMVDepletionObj = {
-					date: basisRewards[i].date,
-					rewBasisMVDepletion:
-						basisRewards[i].basisReward - MVdepletion * percentage,
-				};
-			bookValsMVDepletion.push(bvMVDepObj);
-			basisRewardMVDepletion.push(rewardMVDepletionObj);
+			//let percentage = basisRewards[i].basisReward /// bookVal;
+			
+				let rewardDepletionObj = {
+						date: date,
+						rewBasisDepletion:
+							basisRewards[i].basisReward - depletion //* percentage, //CHANGE THIS ADD DEPLETION AT THE RATIO OF THIS REWARD TO ACCOUNT BALANCE
+					};
+				bookValsDepletion.push(bvDepObj);
+				basisRewardDepletion.push(rewardDepletionObj);
+			
+
+			
+				//percentage = basisRewards[i].basisReward /// bookVal;
+				let rewardMVDepletionObj = {
+						date: basisRewards[i].date,
+						rewBasisMVDepletion:
+							basisRewards[i].basisReward - MVdepletion //* percentage,
+					};
+				bookValsMVDepletion.push(bvMVDepObj);
+				basisRewardMVDepletion.push(rewardMVDepletionObj);
+			
 		}
 
 	}
@@ -999,6 +1103,227 @@ async function autoAnalysis(address, fiat) {
 	};
 
 	return analysisResObj;
+}
+
+async function getRewardsBakers(address) {
+    let rewards = [];
+        // let flowins = {};
+        // let flowouts = {};
+    let lastId = 0;
+    while (true) {
+        try {
+            let url = `https://api.tzkt.io/v1/accounts/${address}/operations?type=endorsement,baking,nonce_revelation,double_baking,double_endorsing,transaction,origination,delegation,reveal,revelation_penalty&lastId=${lastId}&limit=10000&sort=0`;
+            // let url = `https://api.tzkt.io/v1/accounts/${address}/operations?lastId=${lastId}&limit=1000&sort=0`;
+            const response = await axios.get(url);
+            lastId = response.data[response.data.length - 1].id;  // update lastId
+            for (let i = 0; i < response.data.length; i++) {
+                const element = response.data[i];
+                if ('endorsement' === element.type) {
+                    rewards.push({
+                        type: 'endorsement',
+                        timestamp: new Date(Date.parse(element.timestamp)),
+                        amount: element.rewards / 1000000
+                    });
+                } else if ('baking' === element.type) {
+                    rewards.push({
+                        type: 'baking',
+                        timestamp: new Date(Date.parse(element.timestamp)),
+                        amount: element.reward + element.fees / 1000000
+                    });
+                } else if ('nonce_revelation' === element.type) {
+                    rewards.push({
+                        type: 'nonce_revelation',
+                        timestamp: new Date(Date.parse(element.timestamp)),
+                        amount: element.bakerRewards / 1000000
+                    });
+                } else if ('double_baking' === element.type) {
+                    let isAccuser = element.accuser.address === address;
+                    if (isAccuser) {
+                        rewards.push({
+                            type: 'double_baking',
+                            timestamp: new Date(Date.parse(element.timestamp)),
+                            amount: element.accuserRewards / 1000000
+                        });
+                    } else {
+                        rewards.push({
+                            type: 'double_baking',
+                            timestamp: new Date(Date.parse(element.timestamp)),
+                            amount: -(element.offenderLostDeposits + element.offenderLostRewards + element.offenderLostFees) / 1000000
+                        })
+                    }
+                } else if ('double_endorsing' === element.type) {
+                    let isAccuser = element.accuser.address === address;
+                    if (isAccuser) {
+                        rewards.push({
+                            type: 'double_endorsing',
+                            timestamp: new Date(Date.parse(element.timestamp)),
+                            amount: element.accuserRewards / 1000000
+                        });
+                    } else {  // is accused offender
+                        rewards.push({
+                            type: 'double_endorsing',
+                            timestamp: new Date(Date.parse(element.timestamp)),
+                            amount: -(element.offenderLostDeposits + element.offenderLostRewards + element.offenderLostFees) / 1000000
+                        });
+                    }
+                }
+                // else if ('transaction' === element.type) {
+                //     let isInTransaction = element.target.address === address;
+                //     if ('applied' === element.status) {
+                //         if (isInTransaction) {
+                //             const d = Math.floor(Date.parse(element.timestamp) / (1000 * 60 * 60 * 24));
+                //             if (d in flowins) {
+                //                 flowins[d] += element.amount;
+                //             } else {
+                //                 flowins[d] = element.amount;
+                //             }
+                //         } else {
+                //             const d = Math.floor(Date.parse(element.timestamp) / (1000 * 60 * 60 * 24));
+                //             if (d in flowouts) {
+                //                 flowouts[d] += element.amount + element.bakerFee + element.storageFee + element.allocationFee;
+                //             } else {
+                //                 flowouts[d] = element.amount + element.bakerFee + element.storageFee + element.allocationFee;
+                //             }
+                //         }
+                //     }
+                //     else if ('failed' === element.status && !isInTransaction) {
+                //         rewards.push({
+                //             type: 'transaction',
+                //             timestamp: new Date(Date.parse(element.timestamp)),
+                //             amount: -1 * (element.bakerFee + element.storageFee + element.allocationFee)
+                //         })
+                //     }
+                //     else if ('backtracked' === element.type) {
+                //     }
+                //     else if ('skipped' === element.type) {
+                //     }
+                // }
+                else if ('origination' === element.type) {
+                    rewards.push({
+                        type: 'origination',
+                        timestamp: new Date(Date.parse(element.timestamp)),
+                        amount: -(element.bakerFee + element.storageFee + element.allocationFee) / 1000000
+                    });
+                }
+                else if ('delegation' === element.type) {
+                    let isSender = element.sender.address === address;
+                    if (isSender) {
+                        rewards.push({
+                            type: 'delegation',
+                            timestamp: new Date(Date.parse(element.timestamp)),
+                            amount: -1 * element.bakerFee / 1000000
+                        })
+                    }
+                }
+                else if ('reveal' === element.type) {
+                    rewards.push({
+                        type: 'reveal',
+                        timestamp: new Date(Date.parse(element.timestamp)),
+                        amount: -1 * element.bakerFee / 1000000
+                    })
+                }
+                else if ('revelation_penalty' === element.type) {
+                    rewards.push({
+                        type: 'revelation_penalty',
+                        timestamp: new Date(Date.parse(element.timestamp)),
+                        amount: -1 * (element.lostReward + element.lostFees) / 1000000
+                    })
+                }
+            }
+            if (response.data.length < 1000) {  // if is the last page
+                break;
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+    // create dictionary (key -> date: value -> sum of rewards on that day)
+	let rewardsByDay = []
+    let rewardsByDayObj = {};
+    for (let i = 0; i < rewards.length; i++) {
+        const d = formatDate(rewards[i].timestamp) 
+        const amount = rewards[i].amount;
+		rewardsByDayObj = {
+			date: d,
+			rewardQuantity: amount
+		};
+		rewardsByDay.push(rewardsByDayObj)
+
+		for(j=0;j<rewardsByDay.length - 1; j++){
+			if(d === rewardsByDay[j].date){
+				rewardsByDay.pop()
+				rewardsByDay[j].rewardQuantity += amount;
+			}
+		}
+	
+	}
+
+
+
+		// if(d === rewardsByDay[j].date){
+		// 	rewardsByDayObj[j].rewardQuantity += amount;
+		// }
+        // // if (!(d in rewardsByDay)) {
+        // //     rewardsByDay[d] = 0;
+        // // }
+        // // rewardsByDay[d] += amount;
+		// //if date in rewardsByDay
+		// rewardsByDayObj = {
+		// 	date: d,
+		// 	rewardQuantity: amount
+		// };
+		// rewardsByDay.push(rewardsByDayObj)
+		
+	
+   
+
+	// for(j=0;j<rewardsByDay.length; j++){
+	// 	d = rewardsByDay[j].date
+	// 	if(d === rewardsByDay[j].date){
+	// 		rewardsByDayObj[j].rewardQuantity += amount;
+	// 	}
+	// 	else{
+	// 		rewardsByDayObj = {
+	// 			date: d,
+	// 			rewardQuantity: amount
+	// 		};
+	// 		rewardsByDay.push(rewardsByDayObj)
+	// 	}
+	// }
+
+
+
+
+
+	let url2 = `https://api.tzkt.io/v1/operations/transactions?anyof.sender.target=${address}`;
+	const response2 = await axios.get(url2);
+
+	let objectArray = [];
+	let object = {};
+	for (i = 0; i < response2.data.length; i++) {
+		//each baker address in the object
+		if (response2.data[i].target.address == address) {
+			date = new Date(response2.data[i].timestamp);
+			amount = response2.data[i].amount / 1000000;
+			object = {
+				date: date,
+				amounnt: amount,
+			};
+			objectArray.push(object);
+		} else if (response2.data[i].sender.address == address) {
+			date = new Date(response2.data[i].timestamp);
+			amount = (response2.data[i].amount / 1000000) * -1;
+			object = {
+				date: date,
+				amounnt: amount,
+			};
+			objectArray.push(object);
+		}
+	}
+
+
+
+    return [rewardsByDay, objectArray];
 }
 
 
